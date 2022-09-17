@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather Forecast</title>
+    <style>
+      * {
+        font-family: sans-serif;
+        color: brown;
+      }
+      body {
+        background: url("https://images.theconversation.com/files/232705/original/file-20180820-30593-1nxanpj.jpg?ixlib=rb-1.1.0&q=45&auto=format&w=1200&h=900.0&fit=crop");
+        background-size: cover;
+        background-repeat: no-repeat;
+        /* overflow: hidden; */
+        background-attachment: fixed;
+        height: 100vh;
+      }
+      #headdiv {
+        text-align: center;
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 5px;
+        margin: auto;
+      }
+      #searchbox {
+        display: flex;
+        justify-content: center;
+        height: 100px;
+        align-items: center;
+      }
+      #searchbox > input {
+        height: 25px;
+        width: 400px;
+      }
+      #searchbox > button {
+        height: 31px;
+        background-color: brown;
+        border: 0px;
+        color: white;
+        width: 100px;
+        cursor: pointer;
+        font-weight: 500;
+      }
+      #container {
+        display: flex;
+        margin: auto;
+        margin-top: 10px;
+        width: 80%;
+        background-color: rgba(255, 255, 255, 0.4);
+        justify-content: space-around;
+        border-radius: 15px;
+      }
+      #leftdiv {
+        width: 25%;
+        margin-left: 5%;
+        line-height: 5px;
+      }
+      .sundivs,
+      #tempdiv {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .sundivs > img {
+        height: 80px;
+        width: 80px;
+      }
+      #iframe {
+        height: auto;
+        width: 65%;
+        margin-left: 5%;
+      }
+      #container2 {
+        display: flex;
+        justify-content: space-between;
+        margin: auto;
+        height: 200px;
+        line-height: 1px;
+        margin-top: 30px;
+      }
+      #container2 > div {
+        background: rgba(255, 255, 255, 0.7);
+        width: 11%;
+        border-radius: 15px;
+        padding: 10px;
+        margin-right: 20px;
+        text-align: center;
+      }
+      #errorcontainer {
+        display: flex;
+        width: 30%;
+        margin: auto;
+        justify-content: space-between;
+        height: auto;
+        align-items: center;
+        margin: auto;
+        background-color: rgba(255, 255, 255, 0.4);
+        border-radius: 15px;
+        padding-right: 15px;
+      }
+      #errorimage {
+        border-radius: 15px;
+      }
+      @media all and (min-width: 150px) and (max-width: 730px) {
+        body {
+          overflow: absolute;
+          margin: auto;
+        }
+        #container {
+          display: flex;
+          margin: auto;
+          margin-top: 5px;
+          width: 100%;
+          flex-direction: column;
+        }
+        #leftdiv {
+          width: 80%;
+          line-height: 10px;
+        }
+        #iframe {
+          height: 250px;
+          width: 100%;
+          justify-content: center;
+          margin: auto;
+        }
+        #container2 {
+          display: flex;
+          justify-content: start;
+          align-items: none;
+          overflow-y: scroll;
+        }
+        #container2 > div {
+          width: 95%;
+      }
+        #errorcontainer {
+          display: flex;
+          width: 80%;
+          margin: auto;
+          justify-content: space-between;
+          background-color: rgba(255, 255, 255, 0.4);
+          border-radius: 15px;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="headdiv">
+      <h1 id="head">Weather Report for 7 Days</h1>
+    </div>
+
+    <div id="searchbox">
+      <input type="text" id="city" placeholder="Search City"/>
+      <button id="myBtn" onclick="getWhether()">Search</button>
+    </div>
+
+    <div id="container"></div>
+    <div id="errorcontainer"></div>
+    <div id="container2"></div>
+  </body>
+</html>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"
+  integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+></script>
+<script>
+  var input = document.getElementById("city");
+input.addEventListener("keyup", function(event) {
+  if (event.keyCode === 13) {
+   event.preventDefault();
+   document.getElementById("myBtn").click();
+  }
+});
+  let container = document.getElementById("container");
+  async function getWhether() {
+    let city = document.getElementById("city").value;
+    let url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&APPID=eb1435721ec66ca3d3e702a4a3248a73&units=metric`;
+try {
+      let res = await fetch(url);
+      let data = await res.json();
+      console.log("data:", data);
+      appendData(data);
+      let url2 = `https://api.openweathermap.org/data/2.5/onecall?lat=${data.coord.lat}&lon=${data.coord.lon}&exclude=current,hourly,minutely&appid=eb1435721ec66ca3d3e702a4a3248a73&units=metric`;
+      let res2 = await fetch(url2);
+      let data2 = await res2.json();
+      console.log("data2:", data2);
+      sevenDaysData(data2);
+    } catch (err) {
+      console.log("err:", err);
+    }
+  }
+function appendData(data) {
+    if (data.cod === "404") {
+      container.innerHTML = "";
+      document.getElementById("container2").innerHTML = null;
+      document.getElementById("errorcontainer").innerHTML = null;
+      var img1 = document.createElement("img");
+      img1.setAttribute("id", "errorimage");
+      img1.src =
+        "https://media1.giphy.com/media/UoeaPqYrimha6rdTFV/200w.webp?cid=ecf05e47c3fkgu8tgmezw74ps2ivsz2a4v4w0nl4b3h1crp9&rid=200w.webp&ct=g";
+      var div = document.createElement("div");
+      div.setAttribute("id", "error");
+      var line = document.createElement("h3");
+      line.textContent = "City Not Found";
+      div.append(line);
+      errorcontainer.append(img1, div);
+    } else {
+      container.innerHTML = null;
+      document.getElementById("container2").innerHTML = null;
+      document.getElementById("errorcontainer").innerHTML = null;
+      var maindiv = document.getElementById("container");
+      var leftdiv = document.createElement("div");
+      leftdiv.setAttribute("id", "leftdiv");
+      let name = document.createElement("h2");
+      name.innerText = data.name;
+      var tempdiv = document.createElement("div");
+      tempdiv.setAttribute("id", "tempdiv");
+      let temp = document.createElement("h1");
+      temp.innerText = `${data.main.temp.toFixed(0)}°C`;
+      var icon = document.createElement("img");
+      icon.src = `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+      tempdiv.append(temp, icon);
+      let div1 = document.createElement("div");
+      let mintemp = document.createElement("h4");
+      mintemp.innerText = `Min: ${data.main.temp_min.toFixed(0)}°C`;
+      let maxtemp = document.createElement("h4");
+      maxtemp.innerText = `Max: ${data.main.temp_max.toFixed(0)}°C`;
+      div1.append(mintemp, maxtemp);
+     let div2 = document.createElement("div");
+      let wind = document.createElement("h4");
+      wind.innerText = `Wind Speed : ${data.wind.speed} m/s`;
+      let clouds = document.createElement("h4");
+      clouds.innerText = `Clouds : ${data.clouds.all}`;
+      div2.append(wind, clouds);
+      var div3 = document.createElement("div");
+      var risediv = document.createElement("div");
+      risediv.setAttribute("class", "sundivs");
+      var sunriseilogo = document.createElement("img");
+      sunriseilogo.src =
+        `http://openweathermap.org/img/wn/01d@4x.png`;
+      var sunrise = document.createElement("h4");
+      sunrise.innerText = `Sunrise : ${window
+        .moment(data.sys.sunrise * 1000)
+        .format("HH:mm a")}`;
+      risediv.append(sunrise, sunriseilogo);
+      var setdiv = document.createElement("div");
+      setdiv.setAttribute("class", "sundivs");
+      var sunsetilogo = document.createElement("img");
+      sunsetilogo.src =
+        `http://openweathermap.org/img/wn/01n@4x.png`;
+      var sunset = document.createElement("h4");
+      sunset.innerText = `sunset : ${window
+        .moment(data.sys.sunset * 1000)
+        .format("HH:mm a")}`;
+      setdiv.append(sunset, sunsetilogo);
+      div3.append(risediv, setdiv);
+   leftdiv.append(name, tempdiv, div1, div2, div3);
+   let iframe = document.createElement("iframe");
+      iframe.setAttribute("id", "iframe");
+      iframe.src = `https://maps.google.com/maps?q=${data.name}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+      maindiv.append(leftdiv, iframe);
+    }
+  }
+function sevenDaysData(data2) {
+    document.getElementById("container2").innerHTML = null;
+    document.getElementById("errorcontainer").innerHTML = null;
+    data2.daily.forEach(function (elem, index) {
+      var div = document.createElement("div");
+      var days = document.createElement("h3");
+      days.innerText = `${window.moment(elem.dt * 1000).format("ddd")}`;
+      console.log("days:", days.innerText);
+      var icon = document.createElement("img");
+      icon.src = `http://openweathermap.org/img/wn/${elem.weather[0].icon}@2x.png`;
+      console.log("icon:", icon);
+      var day = document.createElement("h4");
+      day.innerText = `Day: ${elem.temp.day.toFixed(0)}°C`;
+      var night = document.createElement("h4");
+      night.innerText = `Night: ${elem.temp.night.toFixed(0)}°C`;
+      div.append(days, icon, day, night);
+      document.getElementById("container2").append(div);
+    });
+  }
+</script>
